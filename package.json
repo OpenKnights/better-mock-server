@@ -1,0 +1,65 @@
+{
+  "name": "better-mock-server",
+  "version": "1.0.0",
+  "description": "this is mock server",
+  "type": "module",
+  "keywords": [
+    "mock",
+    "mock server"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/OpenKnights/better-mock-server#readme",
+  "bugs": {
+    "url": "https://github.com/OpenKnights/better-mock-server/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenKnights/better-mock-server.git"
+  },
+  "author": "king-3 <w2196592083@gmail.com>",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "imports": {
+    "#/*": "./",
+    "#types/*": "./types/*"
+  },
+  "scripts": {
+    "play": "npx play",
+    "test": "vitest",
+    "build": "node scripts/build.js",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format": "prettier . --write",
+    "release": "bumpp"
+  },
+  "peerDependencies": {
+    "h3": "^2.0.1-rc.5"
+  },
+  "dependencies": {
+    "h3": "2.0.1-rc.5"
+  },
+  "devDependencies": {
+    "@king-3/eslint-config": "^2.0.0",
+    "@king-3/play-tsx": "^1.3.0",
+    "@king-3/prettier-config": "^1.0.2",
+    "@types/node": "^24.5.2",
+    "bumpp": "^10.2.3",
+    "eslint": "^9.36.0",
+    "prettier": "^3.6.2",
+    "tsdown": "^0.16.4",
+    "tsx": "^4.20.6",
+    "unbuild": "^3.6.1",
+    "vitest": "^3.2.4"
+  }
+}
