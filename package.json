@@ -1,6 +1,6 @@
 {
   "name": "better-mock-server",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "A lightweight and fast mock server built on unjs/h3 for modern web development.",
   "type": "module",
   "keywords": [
