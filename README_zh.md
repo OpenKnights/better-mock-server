@@ -1,6 +1,6 @@
 # better-mock-server
 
-> A TypeScript-first mock server library built on top of [unjs/h3](https://github.com/unjs/h3), providing an elegant and type-safe way to create HTTP mock servers for development and testing.
+> 一个基于 [unjs/h3](https://github.com/unjs/h3) 构建的 TypeScript 现代化模拟服务库, 为开发和测试提供优雅且类型安全的 HTTP 模拟服务创建方式。
 
 [![npm version](https://img.shields.io/npm/v/better-mock-server.svg)](https://www.npmjs.com/package/better-mock-server)
 [![npm downloads](https://img.shields.io/npm/dm/better-mock-server.svg)](https://www.npmjs.com/package/better-mock-server)
@@ -9,17 +9,18 @@
 
 [English](./README.md) | [中文](./README_zh.md)
 
-## ✨ Features
+## ✨ 特性
 
-- 🎯 **Type-Safe**: Full TypeScript support with comprehensive type definitions
-- 🚀 **Built on H3**: Leverages the powerful and minimal H3 framework
-- 🎨 **Elegant API**: Clean and intuitive configuration syntax
-- 🔧 **Flexible Routing**: Support for nested routes and multiple HTTP methods
-- 🔌 **Middleware Support**: Easy middleware registration with route-specific options
-- 🧩 **Plugin System**: Extensible through H3's plugin architecture
-- 📦 **Zero Config**: Works out of the box with sensible defaults
+- 🎯 **类型安全**: 完整的 TypeScript 支持和全面的类型定义
+- 🚀 **基于 H3**: 利用强大而精简的 H3 框架
+- 🎨 **优雅的 API**: 简洁直观的配置语法
+-
+- 🔧 **灵活的路由**: 支持嵌套路由和多种 HTTP 方法
+- 🔌 **中间件支持**: 轻松注册中间件,支持路由特定选项
+- 🧩 **插件系统**: 通过 H3 的插件架构实现可扩展性
+- 📦 **零配置**: 开箱即用,具有合理的默认设置
 
-## 📦 Installation
+## 📦 安装
 
 ```bash
 npm install better-mock-server h3
@@ -33,7 +34,7 @@ pnpm add better-mock-server h3
 yarn add better-mock-server h3
 ```
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
 ```typescript
 import { createAppServer } from 'better-mock-server'
@@ -47,19 +48,19 @@ const server = createAppServer({
   }
 })
 
-console.log(`Server running at ${server.url}`)
+console.log(`服务运行在 ${server.url}`)
 
-// Later: close the server
+// 稍后: 关闭服务
 await server.close()
 ```
 
-## 🎯 Core Concepts
+## 🎯 核心概念
 
-### Routes
+### 路由
 
-Routes define the HTTP endpoints and their handlers. You can use simple handlers or detailed route configurations.
+路由定义 HTTP 端点及其处理器。您可以使用简单的处理器或详细的路由配置。
 
-#### Simple Handler (All Methods)
+#### 简单处理器(所有方法)
 
 ```typescript
 const routes = {
@@ -67,14 +68,14 @@ const routes = {
 }
 ```
 
-#### Method-Specific Handlers
+#### 特定方法处理器
 
 ```typescript
 const routes = {
   '/api/users': {
     GET: (event) => [
-      { id: 1, name: 'John' },
-      { id: 2, name: 'Jane' }
+      { id: 1, name: '张三' },
+      { id: 2, name: '李四' }
     ],
     POST: async (event) => {
       const body = await readBody(event)
@@ -87,19 +88,19 @@ const routes = {
 }
 ```
 
-#### Nested Routes
+#### 嵌套路由
 
 ```typescript
 const routes = {
   '/api': {
-    GET: (event) => 'API Root',
+    GET: (event) => 'API 根路径',
     children: {
       '/users': {
-        GET: (event) => 'List users',
+        GET: (event) => '用户列表',
         children: {
           '/:id': {
-            GET: (event) => `Get user ${event.context.params.id}`,
-            DELETE: (event) => `Delete user ${event.context.params.id}`
+            GET: (event) => `获取用户 ${event.context.params.id}`,
+            DELETE: (event) => `删除用户 ${event.context.params.id}`
           }
         }
       }
@@ -108,13 +109,13 @@ const routes = {
 }
 ```
 
-#### Route Options
+#### 路由选项
 
 ```typescript
 const routes = {
   '/api/meta': {
     GET: {
-      handler: (event) => 'meta options',
+      handler: (event) => '元信息',
       options: {
         meta: { name: 'king3' }
       }
@@ -123,11 +124,11 @@ const routes = {
 }
 ```
 
-### Middlewares
+### 中间件
 
-Middlewares are functions that run before route handlers, useful for logging, authentication, CORS, etc.
+中间件是在路由处理器之前运行的函数,用于日志记录、身份验证、CORS 等。
 
-#### Global Middleware
+#### 全局中间件
 
 ```typescript
 const middlewares = [
@@ -138,21 +139,21 @@ const middlewares = [
 ]
 ```
 
-#### Route-Specific Middleware
+#### 路由特定中间件
 
 ```typescript
 const middlewares = [
   {
     route: '/api',
     handler: (event, next) => {
-      console.log('API route accessed')
+      console.log('访问 API 路由')
       return next()
     }
   }
 ]
 ```
 
-#### Middleware with Options
+#### 带选项的中间件
 
 ```typescript
 const middlewares = [
@@ -165,9 +166,9 @@ const middlewares = [
 ]
 ```
 
-### Plugins
+### 插件
 
-Plugins extend the functionality of your server using H3's plugin system.
+插件使用 H3 的插件系统扩展服务的功能。
 
 ```typescript
 import { definePlugin } from 'better-mock-server'
@@ -188,29 +189,29 @@ const server = createAppServer({
 })
 ```
 
-## 📚 API Reference
+## 📚 API 参考
 
-### Server Functions
+### 创建服务函数
 
 #### `createAppServer(options)`
 
-Creates and starts an HTTP server with the configured application.
+创建并启动配置好的 HTTP 服务器应用。
 
-**Parameters:**
+**参数:**
 
-- `options.routes` (required): Routes configuration
-- `options.middlewares` (optional): Middlewares array
-- `options.plugins` (optional): Plugins array
-- `options.port` (optional): Port number (default: 0 for random port)
+- `options.routes` (必需): 路由配置
+- `options.middlewares` (可选): 中间件数组
+- `options.plugins` (可选): 插件数组
+- `options.port` (可选): 端口号(默认: 0 表示随机端口)
 
-**Returns:** `AppServer` object with:
+**返回:** `AppServer` 对象,包含:
 
-- `raw`: Raw H3 server instance
-- `port`: Server port number
-- `url`: Server URL
-- `close()`: Async function to close the server
+- `raw`: 原始 H3 服务器实例
+- `port`: 服务器端口号
+- `url`: 服务器 URL
+- `close()`: 关闭服务器的异步函数
 
-**Example:**
+**示例:**
 
 ```typescript
 const server = createAppServer({
@@ -220,29 +221,29 @@ const server = createAppServer({
   },
   middlewares: [
     (event, next) => {
-      console.log('Request received')
+      console.log('收到请求')
       return next()
     }
   ]
 })
 
-console.log(`Running at ${server.url}`)
+console.log(`运行在 ${server.url}`)
 await server.close()
 ```
 
 #### `createApp(options)`
 
-Creates an H3 application instance without starting a server. Useful when you want to integrate with existing server setup.
+创建 H3 应用实例而不启动服务。当您想要与现有服务设置集成时很有用。
 
-**Parameters:**
+**参数:**
 
-- `options.routes` (optional): Routes configuration
-- `options.middlewares` (optional): Middlewares array
-- `options.plugins` (optional): Plugins array
+- `options.routes` (可选): 路由配置
+- `options.middlewares` (可选): 中间件数组
+- `options.plugins` (可选): 插件数组
 
-**Returns:** H3 application instance
+**返回:** H3 应用实例
 
-**Example:**
+**示例:**
 
 ```typescript
 import { createApp } from 'better-mock-server'
@@ -254,17 +255,17 @@ const app = createApp({
   }
 })
 
-// Use with your own server configuration
+// 使用您自己的服务器配置
 const server = serve(app, { port: 4000 })
 ```
 
-### Route Functions
+### 路由函数
 
 #### `defineRoutes(routes)`
 
-Provides type-safe route definitions with IDE auto-completion.
+提供类型安全的路由定义和 IDE 自动补全。
 
-**Example:**
+**示例:**
 
 ```typescript
 import { defineRoutes } from 'better-mock-server'
@@ -282,42 +283,42 @@ const routes = defineRoutes({
 
 #### `parseRoutes(routes, basePath?)`
 
-Parses nested route structures into a flat array of route definitions. Mainly for internal use.
+将嵌套路由结构解析为扁平的路由定义数组。主要供内部使用。
 
-**Parameters:**
+**参数:**
 
-- `routes`: Routes configuration object
-- `basePath` (optional): Base path for nested routes
+- `routes`: 路由配置对象
+- `basePath` (可选): 嵌套路由的基础路径
 
-**Returns:** Array of parsed route objects
+**返回:** 解析后的路由对象数组
 
 #### `registerRoutes(app, routes?)`
 
-Registers routes to an H3 application instance.
+将路由注册到 H3 应用实例。
 
-**Parameters:**
+**参数:**
 
-- `app`: H3 application instance
-- `routes` (optional): Routes configuration
+- `app`: H3 应用实例
+- `routes` (可选): 路由配置
 
-### Middleware Functions
+### 中间件函数
 
 #### `defineMiddleware(input)`
 
-Defines middleware with type safety. Accepts either a function or configuration object.
+定义类型安全的中间件。接受函数或配置对象。
 
-**Example:**
+**示例:**
 
 ```typescript
 import { defineMiddleware } from 'better-mock-server'
 
-// With function
+// 使用函数
 const mw1 = defineMiddleware((event, next) => {
-  console.log('Middleware')
+  console.log('中间件')
   return next()
 })
 
-// With config
+// 使用配置
 const mw2 = defineMiddleware({
   route: '/api',
   handler: (event, next) => next(),
@@ -327,55 +328,55 @@ const mw2 = defineMiddleware({
 
 #### `parseMiddlewares(middlewares)`
 
-Parses middleware configurations into standardized tuple format. Mainly for internal use.
+将中间件配置解析为标准化的元组格式。主要供内部使用。
 
-**Parameters:**
+**参数:**
 
-- `middlewares`: Array of middleware functions or configurations
+- `middlewares`: 中间件函数或配置数组
 
-**Returns:** Array of parsed middleware tuples
+**返回:** 解析后的中间件元组数组
 
 #### `registerMiddlewares(app, middlewares?)`
 
-Registers middlewares to an H3 application instance.
+将中间件注册到 H3 应用实例。
 
-**Parameters:**
+**参数:**
 
-- `app`: H3 application instance
-- `middlewares` (optional): Middlewares array
+- `app`: H3 应用实例
+- `middlewares` (可选): 中间件数组
 
-### Plugin Functions
+### 插件函数
 
 #### `definePlugin`
 
-Re-export of H3's `definePlugin` for convenience.
+H3 的 `definePlugin` 的重新导出,为方便使用。
 
-**Example:**
+**示例:**
 
 ```typescript
 import { definePlugin } from 'better-mock-server'
 
 const myPlugin = definePlugin((h3, _options) => {
-  // Plugin setup
+  // 插件设置
 })
 ```
 
 #### `registerPlugins(app, plugins?)`
 
-Registers plugins to an H3 application instance.
+将插件注册到 H3 应用实例。
 
-**Parameters:**
+**参数:**
 
-- `app`: H3 application instance
-- `plugins` (optional): Plugins array
+- `app`: H3 应用实例
+- `plugins` (可选): 插件数组
 
-### Utility Functions
+### 工具函数
 
 #### `joinPaths(...paths)`
 
-Joins multiple path segments into a normalized path.
+将多个路径段连接成规范化的路径。
 
-**Example:**
+**示例:**
 
 ```typescript
 import { joinPaths } from 'better-mock-server'
@@ -387,33 +388,33 @@ joinPaths('api', '', 'users') // 'api/users'
 
 #### `isObject(value)`
 
-Checks if a value is a plain object.
+检查值是否为普通对象。
 
 #### `isArray(value)`
 
-Checks if a value is an array (re-export of `Array.isArray`).
+检查值是否为数组(`Array.isArray` 的重新导出)。
 
 #### `isEmptyArray(value)`
 
-Checks if a value is undefined, null, or an empty array.
+检查值是否为 undefined、null 或空数组。
 
 #### `isHandlerConfig<T>(config)`
 
-Type guard to check if a config object contains a handler function.
+类型守卫,检查配置对象是否包含处理器函数。
 
-### Constants
+### 常量
 
 #### `HTTP_METHODS`
 
-Array of standard HTTP methods: `['GET', 'POST', 'PUT', 'PATCH', 'DELETE']`
+标准 HTTP 方法数组: `['GET', 'POST', 'PUT', 'PATCH', 'DELETE']`
 
 #### `ALL_HTTP_METHOD`
 
-Special constant `'ALL'` for matching all HTTP methods.
+特殊常量 `'ALL'`,用于匹配所有 HTTP 方法。
 
-## 📝 Type Definitions
+## 📝 类型定义
 
-### Routes Types
+### 路由类型
 
 ```typescript
 type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -440,7 +441,7 @@ interface Routes {
 }
 ```
 
-### Middleware Types
+### 中间件类型
 
 ```typescript
 interface MiddlewareConfig {
@@ -452,7 +453,7 @@ interface MiddlewareConfig {
 type Middlewares = Array<Middleware | MiddlewareConfig>
 ```
 
-### Server Types
+### 服务器类型
 
 ```typescript
 interface AppOptions {
@@ -474,7 +475,7 @@ interface AppServer {
 }
 ```
 
-## 💡 Complete Example
+## 💡 完整示例
 
 ```typescript
 import {
@@ -484,18 +485,18 @@ import {
 } from 'better-mock-server'
 import { readBody } from 'h3'
 
-// Define a logger middleware
+// 定义日志中间件
 const logger = defineMiddleware((event, next) => {
   console.log(`[${new Date().toISOString()}] ${event.method} ${event.path}`)
   return next()
 })
 
-// Define a custom plugin
+// 定义自定义插件
 const corsPlugin = definePlugin((h3, _options) => {
-  // CORS setup logic
+  // CORS 设置逻辑
 })
 
-// Create server with full configuration
+// 创建完整配置的服务
 const server = createAppServer({
   port: 3000,
 
@@ -513,7 +514,7 @@ const server = createAppServer({
   ],
 
   routes: {
-    '/': () => 'Welcome to Better Mock Server!',
+    '/': () => '欢迎使用 Better Mock Server!',
 
     '/api': {
       GET: () => ({ version: '1.0.0' }),
@@ -521,8 +522,8 @@ const server = createAppServer({
       children: {
         '/users': {
           GET: () => [
-            { id: 1, name: 'Alice', email: 'alice@example.com' },
-            { id: 2, name: 'Bob', email: 'bob@example.com' }
+            { id: 1, name: '张三', email: 'zhangsan@example.com' },
+            { id: 2, name: '李四', email: 'lisi@example.com' }
           ],
 
           POST: async (event) => {
@@ -540,7 +541,7 @@ const server = createAppServer({
                 const id = event.context.params.id
                 return {
                   id,
-                  name: `User ${id}`,
+                  name: `用户 ${id}`,
                   email: `user${id}@example.com`
                 }
               },
@@ -568,8 +569,8 @@ const server = createAppServer({
 
         '/posts': {
           GET: () => [
-            { id: 1, title: 'First Post', content: 'Hello World' },
-            { id: 2, title: 'Second Post', content: 'TypeScript is awesome' }
+            { id: 1, title: '第一篇文章', content: '你好世界' },
+            { id: 2, title: '第二篇文章', content: 'TypeScript 真棒' }
           ]
         }
       }
@@ -577,23 +578,23 @@ const server = createAppServer({
   }
 })
 
-console.log(`🚀 Server running at ${server.url}`)
+console.log(`🚀 服务运行在 ${server.url}`)
 
-// Graceful shutdown
+// 优雅关闭
 process.on('SIGINT', async () => {
-  console.log('\n👋 Shutting down...')
+  console.log('\n👋 正在关闭...')
   await server.close()
   process.exit(0)
 })
 ```
 
-## ✅ Best Practices
+## ✅ 最佳实践
 
-1. **Use `defineRoutes` for Type Safety**: Always wrap your routes with `defineRoutes()` for better IDE support and type checking.
+1. **使用 `defineRoutes` 获得类型安全**: 始终使用 `defineRoutes()` 包装您的路由,以获得更好的 IDE 支持和类型检查。
 
-2. **Order Matters**: Middlewares and routes are registered in the order they appear. Place global middlewares before route-specific ones.
+2. **顺序很重要**: 中间件和路由按照它们出现的顺序注册。将全局中间件放在路由特定中间件之前。
 
-3. **Async Handlers**: When working with request bodies or async operations, always use async handlers:
+3. **异步处理器**: 在处理请求体或异步操作时,始终使用异步处理器:
 
    ```typescript
    ;async (event) => {
@@ -602,19 +603,19 @@ process.on('SIGINT', async () => {
    }
    ```
 
-4. **Error Handling**: Use H3's error handling utilities:
+4. **错误处理**: 使用 H3 的错误处理工具:
 
    ```typescript
    import { createError } from 'h3'
    ;(event) => {
      throw createError({
        statusCode: 404,
-       message: 'User not found'
+       message: '未找到用户'
      })
    }
    ```
 
-5. **Path Parameters**: Access route parameters through `event.context.params`:
+5. **路径参数**: 通过 `event.context.params` 访问路由参数:
 
    ```typescript
    const routes = {
@@ -627,7 +628,7 @@ process.on('SIGINT', async () => {
    }
    ```
 
-6. **Nested Routes**: Use the `children` property for better organization:
+6. **嵌套路由**: 使用 `children` 属性实现更好的组织:
    ```typescript
    const routes = {
      '/api': {
@@ -643,28 +644,28 @@ process.on('SIGINT', async () => {
    }
    ```
 
-## ⚠️ Constraints & Limitations
+## ⚠️ 约束与限制
 
-- The library is built on H3, so all H3 limitations apply
-- Route definitions must be known at server startup (no dynamic route registration)
-- Middleware execution order follows the registration order
-- Port 0 will assign a random available port
+- 该库基于 H3 构建,因此所有 H3 的限制都适用
+- 路由定义必须在服务启动时已知(不支持动态路由注册)
+- 中间件执行顺序遵循注册顺序
+- 端口 0 将分配一个随机可用端口
 
-## 📄 License
+## 📄 许可证
 
-MIT License © 2025 [king3](https://github.com/OpenKnights)
+MIT 许可证 © 2025 [king3](https://github.com/OpenKnights)
 
-## 🤝 Contributing
+## 🤝 贡献
 
-Contributions, issues and feature requests are welcome!
+欢迎贡献、提出问题和功能请求！
 
-Feel free to check the [issues page](https://github.com/OpenKnights/better-mock-server/issues).
+随时查看 [issues 页面](https://github.com/OpenKnights/storadapt/issues)。
 
-## 🔗 Related Projects
+## 🔗 相关项目
 
-- [unjs/h3](https://github.com/unjs/h3) - Minimal H3 HTTP framework
-- [unjs](https://unjs.io) - Unified JavaScript Tools
+- [unjs/h3](https://github.com/unjs/h3) - 精简的 H3 HTTP 框架
+- [unjs](https://unjs.io) - 统一的 JavaScript 工具集
 
-## ⭐ Show Your Support
+## ⭐ 支持
 
-Give a ⭐️ if this project helped you!
+如果这个项目对你有帮助，请给个 ⭐️！
