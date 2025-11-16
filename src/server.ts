@@ -52,10 +52,12 @@ function createAppServer(options: AppServerOptions) {
 
   const server = serve(app, { port })
 
+  const actualPort = server.options.port || port
+
   const appServer: AppServer = {
     raw: server,
-    port: server.options.port || port,
-    url: server.url || genLocalUrl(server.options.port || port),
+    port: actualPort,
+    url: genLocalUrl(actualPort),
     close: server.close
   }
 
