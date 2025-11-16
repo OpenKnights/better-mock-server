@@ -5,17 +5,19 @@ import { definePlugin as defineH3Plugin } from 'h3'
 import { isEmptyArray } from './util'
 
 /**
- * 定义插件
+ * Defines an H3 plugin with type safety.
+ * This is a re-export of the h3 `definePlugin` function for convenience.
  */
 const definePlugin = defineH3Plugin
 
 /**
- * 注册中间件到 H3 应用
+ * Registers all plugins to an H3 application instance.
+ * Plugins are registered in the order they appear in the array.
  */
 function registerPlugins(app: App, plugins?: Plugins): void {
   if (isEmptyArray(plugins)) return
 
-  // 直接展开数组传给 app.use()
+  // Register each plugin to the app
   for (const plugin of plugins) {
     app.register(plugin)
   }

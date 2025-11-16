@@ -10,8 +10,15 @@ import { registerMiddlewares } from './middlewares'
 import { registerPlugins } from './plugins'
 import { registerRoutes } from './routes'
 
+/**
+ * Generates a localhost URL for the given port.
+ */
 const genLocalUrl = (port: number | string) => `http://localhost:${port}`
 
+/**
+ * Creates an H3 application instance with the provided configuration.
+ * Registers plugins, middlewares, and routes in the correct order.
+ */
 function createApp(options: AppOptions): App {
   const { routes, middlewares, plugins } = options
 
@@ -30,6 +37,10 @@ function createApp(options: AppOptions): App {
   return app
 }
 
+/**
+ * Creates and starts an HTTP server with the configured application.
+ * This is the main entry point for creating a mock server.
+ */
 function createAppServer(options: AppServerOptions) {
   const { routes, middlewares, port = 0, plugins } = options
 

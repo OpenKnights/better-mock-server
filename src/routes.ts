@@ -8,17 +8,18 @@ import type { App } from '#types/server'
 import type { EventHandler } from 'h3'
 
 import { ALL_HTTP_METHOD, HTTP_METHODS } from './constants'
-import { isEmptyArray, isHandlerConfig, isObject, joinPaths } from './util'
+import { isHandlerConfig, isObject, joinPaths } from './util'
 
 /**
- * 判断是否为 RouteHandlerConfig 类型
+ * Checks if the given configuration object is a valid RouteHandlerConfig.
  */
 function isRouteHandlerConfig(config: unknown): config is RouteHandlerConfig {
   return isHandlerConfig<RouteHandlerConfig>(config)
 }
 
 /**
- * 判断是否为 RouteConfig 类型
+ * Checks if the given object is a valid RouteConfig.
+ * A RouteConfig must have at least one HTTP method property or a children property.
  */
 function isRouteConfig(config: unknown): config is RouteConfig {
   if (!isObject(config)) return false
@@ -35,7 +36,9 @@ function isRouteConfig(config: unknown): config is RouteConfig {
 }
 
 /**
- * 解析嵌套路由结构
+ * Parses nested route structures into a flat array of route definitions.
+ * Recursively processes route configurations and child routes, resolving
+ * full paths and extracting handler configurations.
  */
 function parseRoutes(routes: Routes, basePath = ''): ParsedRoute[] {
   const parsedRoutes: ParsedRoute[] = []
@@ -44,12 +47,12 @@ function parseRoutes(routes: Routes, basePath = ''): ParsedRoute[] {
     const fullPath = joinPaths(basePath, path)
 
     if (isRouteConfig(config)) {
-      // 处理 RouteConfig 类型
+      // Process RouteConfig type
 
       for (const method of HTTP_METHODS) {
         const methodConfig = config[method]
         if (methodConfig) {
-          // 处理 HandlerConfig 或直接的 RouteHandler
+          // Handle HandlerConfig or direct RouteHandler
           if (isRouteHandlerConfig(methodConfig)) {
             parsedRoutes.push({
               route: fullPath,
@@ -67,12 +70,12 @@ function parseRoutes(routes: Routes, basePath = ''): ParsedRoute[] {
         }
       }
 
-      // 递归处理子路由
+      // Recursively process child routes
       if (config.children) {
         parsedRoutes.push(...parseRoutes(config.children, fullPath))
       }
     } else {
-      // 处理 RouteHandler 类型
+      // Process RouteHandler type (matches all methods)
       parsedRoutes.push({
         route: fullPath,
         method: ALL_HTTP_METHOD,
@@ -85,15 +88,18 @@ function parseRoutes(routes: Routes, basePath = ''): ParsedRoute[] {
 }
 
 /**
- * 定义路由对象
+ * Defines routes with type safety and auto-completion.
+ * This is a simple identity function that provides better TypeScript inference.
  */
 const defineRoutes = (routes: Routes) => routes
 
 /**
- * 注册路由到 H3 应用
+ * Registers all routes to an H3 application instance.
+ * Parses the route configurations and registers them with the appropriate
+ * HTTP methods and options.
  */
 function registerRoutes(app: App, routes?: Routes): void {
-  if (isEmptyArray(routes)) return
+  if (!isObject(routes)) return
 
   const parsedRoutes = parseRoutes(routes)
 
@@ -106,4 +112,10 @@ function registerRoutes(app: App, routes?: Routes): void {
   }
 }
 
-export { defineRoutes, parseRoutes, registerRoutes }
+export {
+  defineRoutes,
+  isRouteConfig,
+  isRouteHandlerConfig,
+  parseRoutes,
+  registerRoutes
+}

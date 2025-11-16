@@ -8,22 +8,23 @@ import type { Middleware } from 'h3'
 import { isEmptyArray, isHandlerConfig } from './util'
 
 /**
- * 判断是否为 MiddlewareConfig 类型
+ * Checks if the given configuration object is a valid MiddlewareConfig.
  */
 function isMiddlewareConfig(config: unknown): config is MiddlewareConfig {
   return isHandlerConfig<MiddlewareConfig>(config)
 }
 
 /**
- * 解析中间件配置为二维数组
- * 返回格式可以直接用于 app.use(...middleware)
+ * Parses middleware configurations into a standardized tuple format.
+ * Converts various middleware input formats into arrays that can be directly
+ * spread into app.use() calls.
  */
 function parseMiddlewares(middlewares: Middlewares): ParsedMiddleware[] {
   const parsedMiddlewares: ParsedMiddleware[] = []
 
   for (const middleware of middlewares) {
     if (isMiddlewareConfig(middleware)) {
-      // MiddlewareConfig 格式
+      // MiddlewareConfig format
       const { route, handler, options } = middleware
 
       if (route && options) {
@@ -36,7 +37,7 @@ function parseMiddlewares(middlewares: Middlewares): ParsedMiddleware[] {
         parsedMiddlewares.push([handler])
       }
     } else {
-      // 直接的 Middleware 函数格式
+      // Direct Middleware function format
       parsedMiddlewares.push([middleware])
     }
   }
@@ -45,35 +46,42 @@ function parseMiddlewares(middlewares: Middlewares): ParsedMiddleware[] {
 }
 
 /**
- * 定义中间件配置
+ * Defines a middleware configuration with type safety.
+ * Accepts either a raw middleware function or a full configuration object.
  */
 function defineMiddleware(middleware: Middleware): { handler: Middleware }
 function defineMiddleware(config: MiddlewareConfig): MiddlewareConfig
 function defineMiddleware(
   input: Middleware | MiddlewareConfig
 ): { handler: Middleware } | MiddlewareConfig {
-  // 如果是函数，包装成对象
+  // If it's a function, wrap it in an object
   if (typeof input === 'function') {
     return { handler: input }
   }
 
-  // 如果是配置对象，直接返回
+  // If it's a config object, return directly
   return input
 }
 
 /**
- * 注册中间件到 H3 应用
+ * Registers all middlewares to an H3 application instance.
+ * Parses the middleware configurations and applies them to the app in order.
  */
 function registerMiddlewares(app: App, middlewares?: Middlewares): void {
   if (isEmptyArray(middlewares)) return
 
   const parsedMiddlewares = parseMiddlewares(middlewares)
 
-  // 直接展开数组传给 app.use()
+  // Spread the array directly to app.use()
   for (const middleware of parsedMiddlewares) {
-    // @ts-expect-error - 展开元组类型
+    // @ts-expect-error - spreading tuple types
     app.use(...middleware)
   }
 }
 
-export { defineMiddleware, parseMiddlewares, registerMiddlewares }
+export {
+  defineMiddleware,
+  isMiddlewareConfig,
+  parseMiddlewares,
+  registerMiddlewares
+}

@@ -1,20 +1,36 @@
 import type { EventHandler, RouteOptions } from 'h3'
 
-// HTTP 方法类型
+/**
+ * Standard HTTP methods supported by the server.
+ * These methods correspond to the common RESTful API operations.
+ */
 type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
+/**
+ * Special HTTP method constant that matches all HTTP methods.
+ * When used, the route handler will respond to any HTTP method.
+ */
 type AllHTTPMethod = 'ALL'
 
-// 带选项的路由处理器配置
+/**
+ * Configuration object for a route handler with additional options.
+ * Allows you to specify route-specific behaviors like lazy loading.
+ */
 interface RouteHandlerConfig {
   options?: RouteOptions
   handler: EventHandler
 }
 
-// 路由处理器类型
+/**
+ * A route handler can be either a simple H3 event handler function
+ * or a configuration object with handler and options.
+ */
 type RouteHandler = EventHandler | RouteHandlerConfig
 
-// 路由配置接口
+/**
+ * Configuration object for defining routes with specific HTTP methods.
+ * Supports all standard HTTP methods and nested child routes.
+ */
 interface RouteConfig {
   GET?: RouteHandler
   POST?: RouteHandler
@@ -24,12 +40,22 @@ interface RouteConfig {
   children?: Routes
 }
 
-// 路由定义 - URL 只能是 RouteHandler 或 RouteConfig
+/**
+ * Routes definition object mapping URL paths to handlers or configurations.
+ *
+ * - Keys are URL paths (can include parameters like `/:id`)
+ * - Values can be:
+ *   - A simple handler function (handles all HTTP methods)
+ *   - A RouteConfig object (defines method-specific handlers)
+ */
 interface Routes {
   [route: string]: RouteHandler | RouteConfig
 }
 
-// 解析后的路由项
+/**
+ * Internal representation of a parsed route after processing.
+ * Used by the route registration system to apply routes to the H3 app.
+ */
 interface ParsedRoute {
   route: string
   method: HTTPMethod | AllHTTPMethod

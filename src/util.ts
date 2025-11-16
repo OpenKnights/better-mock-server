@@ -1,17 +1,20 @@
 /**
- * 判断是否为对象
+ * Checks if a value is a plain object.
+ * Returns false for arrays, null, and non-object types.
  */
 export const isObject = (value: unknown): value is object => {
   return !!value && value.constructor === Object
 }
 
 /**
- * 判断是否为数组
+ * Checks if a value is an array.
+ * This is a re-export of the native Array.isArray for consistency.
  */
 export const isArray = Array.isArray
 
 /**
- * 判断是否为空数组
+ * Checks if a value is undefined, null, or an empty array.
+ * Useful for validating optional array parameters.
  */
 export const isEmptyArray = (value: unknown): value is undefined | null | [] =>
   value === undefined ||
@@ -20,7 +23,9 @@ export const isEmptyArray = (value: unknown): value is undefined | null | [] =>
   value.length === 0
 
 /**
- * 拼接路径
+ * Joins multiple path segments into a single normalized path.
+ * Removes duplicate slashes, trailing slashes, and handles empty segments.
+ * Returns '/' for empty or all-falsy inputs.
  */
 export function joinPaths(...paths: string[]): string {
   return (
@@ -30,22 +35,9 @@ export function joinPaths(...paths: string[]): string {
 }
 
 /**
- * 判断是否为包含 handler 的配置对象
- *
- * @template T - 配置对象类型，必须包含 handler 属性
- * @param config - 待检查的值
- * @returns 是否为有效的 handler 配置对象
- *
- * @example
- * ```ts
- * const config = { handler: () => {}, route: '/api' }
- * if (isHandlerConfig<MiddlewareConfig>(config)) {
- *   // config 的类型被收窄为 MiddlewareConfig
- *   console.log(config.handler)
- * }
- * ```
+ * Type guard to check if a configuration object contains a handler function.
+ * Used internally to distinguish between handler configs and plain handlers.
  */
-
 // eslint-disable-next-line typescript/no-unsafe-function-type
 export const isHandlerConfig = <T extends { handler: Function }>(
   config: unknown
