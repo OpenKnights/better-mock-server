@@ -4,6 +4,10 @@ export type * from '#types/routes'
 export type * from '#types/server'
 
 /* export tools */
-export { parseMiddlewares, registerMiddlewares } from './middlewares'
-export { parseRoutes, registerRoutes } from './routes'
-export { createAppServer } from './server'
+export {
+  defineMiddleware,
+  parseMiddlewares,
+  registerMiddlewares
+} from './middlewares'
+export { defineRoutes, parseRoutes, registerRoutes } from './routes'
+export { createApp, createAppServer } from './server'
