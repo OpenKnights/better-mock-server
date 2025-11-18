@@ -48,3 +48,16 @@ export const isHandlerConfig = <T extends { handler: Function }>(
     typeof (config as T).handler === 'function'
   )
 }
+
+/**
+ * Builds a server URL using the WHATWG URL API.
+ */
+export const buildServerUrl = (
+  protocol: string,
+  hostname: string,
+  port?: number | string
+) => {
+  const url = new URL(`${protocol}://${hostname}`)
+  if (port != null) url.port = String(port)
+  return url.toString()
+}

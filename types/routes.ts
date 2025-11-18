@@ -1,74 +1,91 @@
-import type { EventHandler, RouteOptions } from 'h3'
+import type { H3 as H3Instance, serve } from 'h3'
+import type { Middlewares } from './middlewares'
+import type { Plugins } from './plugins'
+import type { Routes } from './routes'
 
 /**
- * Standard HTTP methods supported by the server.
- * These methods correspond to the common RESTful API operations.
+ * The raw server instance returned by H3's serve function.
+ * This is the underlying HTTP server that can be used for advanced configurations.
  */
-type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+type Server = ReturnType<typeof serve>
 
 /**
- * Special HTTP method constant that matches all HTTP methods.
- * When used, the route handler will respond to any HTTP method.
+ * H3 application instance.
+ * This is the core application object that manages routes, middlewares, and plugins.
  */
-type AllHTTPMethod = 'ALL'
+type App = H3Instance
 
 /**
- * Configuration object for a route handler with additional options.
- * Allows you to specify route-specific behaviors like lazy loading.
+ * Configuration options for creating an H3 application.
+ * All options are optional, allowing for flexible application setup.
  */
-interface RouteHandlerConfig {
-  options?: RouteOptions
-  handler: EventHandler
+interface AppOptions {
+  routes?: Routes
+  middlewares?: Middlewares
+  plugins?: Plugins
 }
 
 /**
- * A route handler can be either a simple H3 event handler function
- * or a configuration object with handler and options.
+ * Configuration options for creating and starting an HTTP server.
+ * Extends AppOptions with server-specific settings.
  */
-type RouteHandler = EventHandler | RouteHandlerConfig
-
-/**
- * Configuration object for defining routes with specific HTTP methods.
- * Supports all standard HTTP methods and nested child routes.
- */
-interface RouteConfig {
-  GET?: RouteHandler
-  POST?: RouteHandler
-  PUT?: RouteHandler
-  PATCH?: RouteHandler
-  DELETE?: RouteHandler
-  children?: Routes
+interface AppServerOptions extends AppOptions {
+  routes: Routes
+  port?: number
+  autoListen?: boolean
+  hostname?: string
+  protocol?: 'http' | 'https'
 }
 
 /**
- * Routes definition object mapping URL paths to handlers or configurations.
+ * Application server instance with server information and control methods.
  *
- * - Keys are URL paths (can include parameters like `/:id`)
- * - Values can be:
- *   - A simple handler function (handles all HTTP methods)
- *   - A RouteConfig object (defines method-specific handlers)
+ * The server is created in a dormant state and must be explicitly started
+ * by calling the `listen()` method. This allows for flexible server lifecycle
+ * management and testing scenarios.
  */
-interface Routes {
-  [route: string]: RouteHandler | RouteConfig
+interface AppServer {
+  /**
+   * The raw H3 server instance returned by serve().
+   * Provides access to low-level server operations and configuration.
+   * Undefined until `listen()` is called.
+   */
+  raw: Server | undefined
+
+  /**
+   * The H3 application instance.
+   * Provides access to the configured H3 app with all routes, middlewares, and plugins.
+   */
+  app: App
+
+  /**
+   * The port number the server is listening on.
+   * Undefined until `listen()` is called successfully.
+   * Can be a number or string depending on configuration.
+   */
+  port: number | string | undefined
+
+  /**
+   * The full URL where the server can be accessed.
+   * Undefined until `listen()` is called successfully.
+   * Format: 'http://localhost:{port}'
+   */
+  url: string | undefined
+
+  /**
+   * Starts the mock server on the specified port.
+   * Uses H3's serve() method internally to start the HTTP server.
+   *
+   * @param {number} [listenPort] - Optional port to override the default
+   */
+  listen: (listenPort?: number) => void
+
+  /**
+   * Async function to gracefully close the server.
+   * Waits for pending requests to complete before shutting down.
+   * Resets port, url, and raw to undefined after closing.
+   */
+  close: () => Promise<void>
 }
 
-/**
- * Internal representation of a parsed route after processing.
- * Used by the route registration system to apply routes to the H3 app.
- */
-interface ParsedRoute {
-  route: string
-  method: HTTPMethod | AllHTTPMethod
-  handler: EventHandler
-  options?: RouteOptions
-}
-
-export type {
-  AllHTTPMethod,
-  HTTPMethod,
-  ParsedRoute,
-  RouteConfig,
-  RouteHandler,
-  RouteHandlerConfig,
-  Routes
-}
+export { App, AppOptions, AppServer, AppServerOptions, Server }

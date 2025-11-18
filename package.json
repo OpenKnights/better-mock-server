@@ -1,6 +1,6 @@
 {
   "name": "better-mock-server",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.3",
   "description": "A lightweight and fast mock server built on unjs/h3 for modern web development.",
   "type": "module",
   "keywords": [
@@ -47,7 +47,8 @@
     "h3": "^2.0.1-rc.5"
   },
   "dependencies": {
-    "h3": "2.0.1-rc.5"
+    "h3": "2.0.1-rc.5",
+    "srvx": "^0.9.6"
   },
   "devDependencies": {
     "@king-3/eslint-config": "^2.0.0",
