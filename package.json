@@ -36,8 +36,8 @@
   },
   "scripts": {
     "play": "npx play",
-    "test": "vitest",
     "build": "tsx scripts/build.ts",
+    "test": "vitest",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "format": "prettier . --write",
