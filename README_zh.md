@@ -800,7 +800,7 @@ process.on('SIGINT', async () => {
 
 ## 📄 许可证
 
-MIT License © 2025 [king3](https://github.com/OpenKnights)
+[MIT](./LICENSE) 许可证 © 2025-至今 [king3](https://github.com/coderking3)
 
 ## 🤝 贡献
 
