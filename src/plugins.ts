@@ -1,5 +1,6 @@
 import type { Plugins } from '#types/plugins'
 import type { App } from '#types/server'
+
 import { definePlugin as defineH3Plugin } from 'h3'
 
 import { isEmptyArray } from './util'

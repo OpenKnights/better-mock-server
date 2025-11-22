@@ -5,6 +5,7 @@ import type {
 } from '#types/middlewares'
 import type { App } from '#types/server'
 import type { Middleware } from 'h3'
+
 import { isEmptyArray, isHandlerConfig } from './util'
 
 /**

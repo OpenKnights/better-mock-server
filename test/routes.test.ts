@@ -1,6 +1,8 @@
 import type { Routes } from '#types/routes'
 import type { RouteOptions } from 'h3'
+
 import { describe, expect, it, vi } from 'vitest'
+
 import { defineRoutes, parseRoutes, registerRoutes } from '../src/routes'
 
 describe('routes', () => {

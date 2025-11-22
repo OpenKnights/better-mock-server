@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+
 import { definePlugin, registerPlugins } from '../src/plugins'
 
 describe('plugins', () => {
