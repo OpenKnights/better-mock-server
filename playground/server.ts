@@ -27,13 +27,10 @@ const routes = defineRoutes({
 })
 
 const server = createAppServer({
-  routes,
-  autoListen: true
+  routes
+  // autoListen: true
   // port: 0
 })
-// const app = server.app
-// server.listen()
+await server.listen()
 
-// console.log(`🚀 ~ server:`, server)
-// console.log(`🚀 ~ raw:`, server.raw)
-// console.log('🚀 ~ app:', app)
+console.log(`🚀 ~ server:`, server)

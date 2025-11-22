@@ -1,4 +1,6 @@
 import type { H3 as H3Instance, serve } from 'h3'
+import type { ServerOptions } from 'srvx'
+
 import type { Middlewares } from './middlewares'
 import type { Plugins } from './plugins'
 import type { Routes } from './routes'
@@ -26,12 +28,24 @@ interface AppOptions {
 }
 
 /**
- * Configuration options for creating and starting an HTTP server.
- * Extends AppOptions with server-specific settings.
+ * srvx server options without fetch, middleware, and plugins.
+ * These are handled internally by the application.
  */
-interface AppServerOptions extends AppOptions {
+type srvxServerOptions = Omit<ServerOptions, 'fetch' | 'middleware' | 'plugins'>
+
+/**
+ * Configuration options for creating and starting an HTTP server.
+ * Extends AppOptions with srvx server-specific settings.
+ */
+interface AppServerOptions extends AppOptions, srvxServerOptions {
   routes: Routes
-  port?: number
+
+  /**
+   * Whether to automatically start listening for connections when the server is created.
+   * If true, the server will call listen() immediately upon creation.
+   * If false (default), you need to manually call server.listen() to start the server.
+   */
+  autoListen?: boolean
 }
 
 /**
@@ -39,28 +53,53 @@ interface AppServerOptions extends AppOptions {
  */
 interface AppServer {
   /**
-   * The raw H3 server instance.
+   * The raw H3 server instance returned by serve().
    * Provides access to low-level server operations and configuration.
+   * Undefined until `listen()` is called.
    */
-  raw: Server
+  raw: Server | undefined
+
+  /**
+   * The H3 application instance.
+   * Provides access to the configured H3 app with all routes, middlewares, and plugins.
+   */
+  app: App
 
   /**
    * The port number the server is listening on.
+   * Undefined until `listen()` is called successfully.
    * Can be a number or string depending on configuration.
    */
-  port: number | string
+  port: number | string | undefined
 
   /**
    * The full URL where the server can be accessed.
+   * Undefined until `listen()` is called successfully.
    * Format: 'http://localhost:{port}'
    */
-  url: string
+  url: string | undefined
+
+  /**
+   * Starts the mock server on the specified port.
+   * Uses H3's serve() method internally to start the HTTP server.
+   *
+   * @param {number} [listenPort] - Optional port to override the default
+   */
+  listen: (listenPort?: number) => Promise<void>
 
   /**
    * Async function to gracefully close the server.
    * Waits for pending requests to complete before shutting down.
+   * Resets port, url, and raw to undefined after closing.
    */
   close: () => Promise<void>
 }
 
-export { App, AppOptions, AppServer, AppServerOptions, Server }
+export {
+  App,
+  AppOptions,
+  AppServer,
+  AppServerOptions,
+  Server,
+  srvxServerOptions
+}

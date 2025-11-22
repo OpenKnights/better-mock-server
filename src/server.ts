@@ -5,12 +5,12 @@ import type {
   AppServerOptions
 } from '#types/server'
 
-import { H3 } from 'h3'
-import { serve } from 'srvx'
+import { H3, serve } from 'h3'
+
 import { registerMiddlewares } from './middlewares'
 import { registerPlugins } from './plugins'
 import { registerRoutes } from './routes'
-
+import { buildServerUrl } from './util'
 /**
  * Creates an H3 application instance with the provided configuration.
  * Registers plugins, middlewares, and routes in the correct order.
@@ -35,9 +35,21 @@ function createApp(options: AppOptions): App {
 
 /**
  * Creates an HTTP server instance with the configured application.
- * The server can be started immediately or manually via the listen() method.
+ * When autoListen is false, returns the server instance immediately.
+ * When autoListen is true, returns a promise that resolves when the server is ready.
  */
-function createAppServer(options: AppServerOptions): AppServer {
+function createAppServer(
+  options: AppServerOptions & { autoListen: true }
+): Promise<AppServer>
+function createAppServer(
+  options: AppServerOptions & { autoListen?: false }
+): AppServer
+function createAppServer(
+  options: AppServerOptions
+): AppServer | Promise<AppServer>
+function createAppServer(
+  options: AppServerOptions
+): AppServer | Promise<AppServer> {
   const {
     routes,
     middlewares,
@@ -45,7 +57,8 @@ function createAppServer(options: AppServerOptions): AppServer {
     port = 0,
     autoListen = false,
     protocol = 'http',
-    hostname = 'localhost'
+    hostname = 'localhost',
+    ...restOptions
   } = options
 
   const server = {} as AppServer
@@ -57,54 +70,48 @@ function createAppServer(options: AppServerOptions): AppServer {
   })
 
   /**
-   * Starts the mock server on the specified port.
+   * Starts the server on the specified port.
    * Uses H3's serve() method internally to start the HTTP server.
    */
-  server.listen = (listenPort?: number): void => {
+  server.listen = async (listenPort?: number): Promise<void> => {
     const targetPort = listenPort ?? port
 
-    server.raw = serve(server.app, { port: targetPort, hostname, protocol })
+    server.raw = serve(server.app, {
+      port: targetPort,
+      hostname,
+      protocol,
+      ...restOptions
+    })
 
-    // export function serve(app: H3, options?: Omit<ServerOptions, "fetch">): Server {
-    //   freezeApp(app);
-    //   return srvxServe({ fetch: app.fetch, ...options });
-    // }
+    // Wait for the server to start
+    await server.raw.ready()
 
-    const {
-      raw,
-      raw: { runtime }
-    } = server
-    // console.log('111', server.raw.url)
-    // request.runtime?.name
-    // console.log(`🚀 ~ request.runtime?.name:`, server.raw.runtime)
-    // const {} = (raw as Record<string, any>)[runtime]
+    // Parse port and other information from URL
+    const rawUrl = new URL(server.raw.url as string)
+    const rawProtocol = rawUrl.protocol
+    const rawHostname = rawUrl.hostname
+    const rawPort = Number.parseInt(rawUrl.port, 10)
 
-    // const underlyingServer = getUnderlyingServer(raw, runtime)
-    // console.log(`🚀 ~ underlyingServer:`, underlyingServer)
-
-    // raw.port
-    console.log(`🚀 ~ raw:`, raw)
-    console.log(`🚀 ~ raw-url:`, raw.url)
-
-    // server.port = rawPort
-    // server.url = buildServerUrl(rawProtocol, rawHostname, targetPort)
+    server.port = rawPort
+    server.url = buildServerUrl(rawProtocol, rawHostname, rawPort)
   }
 
   /**
-   * Stops the mock server and cleans up resources.
+   * Stops the server and cleans up resources.
    * Waits for pending requests to complete before shutting down.
    */
   server.close = async (): Promise<void> => {
     if (server.raw) {
       await server.raw.close()
     }
-    server.port = undefined as unknown as number
-    server.url = undefined as unknown as string
+    server.port = undefined
+    server.url = undefined
+    server.raw = undefined
   }
 
   // Auto listen if requested
   if (autoListen) {
-    server.listen()
+    return server.listen().then(() => server)
   }
 
   return server
