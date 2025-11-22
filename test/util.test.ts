@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
+
 import {
-  isArray,
+  buildServerUrl,
   isEmptyArray,
   isHandlerConfig,
   isObject,
@@ -21,19 +22,6 @@ describe('util', () => {
       expect(isObject('string')).toBe(false)
       expect(isObject(123)).toBe(false)
       expect(isObject(true)).toBe(false)
-    })
-  })
-
-  describe('isArray', () => {
-    it('should return true for arrays', () => {
-      expect(isArray([])).toBe(true)
-      expect(isArray([1, 2, 3])).toBe(true)
-    })
-
-    it('should return false for non-arrays', () => {
-      expect(isArray({})).toBe(false)
-      expect(isArray('string')).toBe(false)
-      expect(isArray(null)).toBe(false)
     })
   })
 
@@ -114,6 +102,39 @@ describe('util', () => {
     it('should return false when handler is not a function', () => {
       expect(isHandlerConfig({ handler: 'not a function' })).toBe(false)
       expect(isHandlerConfig({ handler: null })).toBe(false)
+    })
+  })
+
+  describe('buildServerUrl', () => {
+    it('should build URL with protocol and port', () => {
+      expect(buildServerUrl('http:', 'localhost', 3000)).toBe(
+        'http://localhost:3000/'
+      )
+      expect(buildServerUrl('https:', 'example.com', 8443)).toBe(
+        'https://example.com:8443/'
+      )
+    })
+
+    it('should build URL without port when undefined', () => {
+      expect(buildServerUrl('http:', 'localhost')).toBe('http://localhost/')
+      expect(buildServerUrl('https:', 'example.com')).toBe(
+        'https://example.com/'
+      )
+    })
+
+    it('should handle port as string', () => {
+      expect(buildServerUrl('http:', 'localhost', '3000')).toBe(
+        'http://localhost:3000/'
+      )
+    })
+
+    it('should normalize protocol with or without colon', () => {
+      expect(buildServerUrl('http', 'localhost', 3000)).toBe(
+        'http://localhost:3000/'
+      )
+      expect(buildServerUrl('http:', 'localhost', 3000)).toBe(
+        'http://localhost:3000/'
+      )
     })
   })
 })
