@@ -7,12 +7,6 @@ export const isObject = (value: unknown): value is object => {
 }
 
 /**
- * Checks if a value is an array.
- * This is a re-export of the native Array.isArray for consistency.
- */
-export const isArray = Array.isArray
-
-/**
  * Checks if a value is undefined, null, or an empty array.
  * Useful for validating optional array parameters.
  */
@@ -47,4 +41,20 @@ export const isHandlerConfig = <T extends { handler: Function }>(
     'handler' in config &&
     typeof (config as T).handler === 'function'
   )
+}
+
+/**
+ * Builds a server URL using the WHATWG URL API.
+ */
+export const buildServerUrl = (
+  protocol: string,
+  hostname: string,
+  port?: number | string
+) => {
+  // Normalize protocol: add ':' if not present
+  const normalizedProtocol = protocol.endsWith(':') ? protocol : `${protocol}:`
+
+  const url = new URL(`${normalizedProtocol}//${hostname}`)
+  if (port != null) url.port = String(port)
+  return url.toString()
 }

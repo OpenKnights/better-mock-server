@@ -9,5 +9,7 @@ export {
   parseMiddlewares,
   registerMiddlewares
 } from './middlewares'
+export { definePlugin, registerPlugins } from './plugins'
 export { defineRoutes, parseRoutes, registerRoutes } from './routes'
 export { createApp, createAppServer } from './server'
+export { buildServerUrl, joinPaths } from './util'

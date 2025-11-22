@@ -26,8 +26,11 @@ const routes = defineRoutes({
   }
 })
 
-const appServer = createAppServer({
-  routes,
-  port: 3060
+const server = createAppServer({
+  routes
+  // autoListen: true
+  // port: 0
 })
-console.log(`🚀 ~ appServer:`, appServer)
+await server.listen()
+
+console.log(`🚀 ~ server:`, server)

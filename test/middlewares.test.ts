@@ -1,5 +1,7 @@
 import type { MiddlewareOptions } from 'h3'
+
 import { describe, expect, it, vi } from 'vitest'
+
 import {
   defineMiddleware,
   parseMiddlewares,
