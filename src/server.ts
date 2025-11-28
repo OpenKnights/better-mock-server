@@ -49,7 +49,7 @@ function createAppServer(
     port = 0,
     autoListen = false,
     protocol = 'http',
-    hostname = 'localhost',
+    hostname = '127.0.0.1',
     ...restOptions
   } = options
 
