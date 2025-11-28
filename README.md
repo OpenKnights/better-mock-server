@@ -252,6 +252,10 @@ Creates and optionally starts an HTTP server with the configured application.
 - `listen(port?)`: Async function to start the server
 - `close()`: Async function to close the server
 
+**TypeScript Type Inference:**
+
+The return type is automatically inferred based on the `autoListen` property. For best results, use inline objects or the `defineServerOptions()` helper. See [Best Practices](#-best-practices) for detailed examples.
+
 **Examples:**
 
 ```typescript
@@ -269,17 +273,6 @@ console.log(`Running at ${server.url}`)
 // Or override port when listening
 await server.listen(4000)
 
-// Auto-start
-const server = await createAppServer({
-  port: 3000,
-  autoListen: true,
-  routes: {
-    '/api/hello': () => 'Hello'
-  }
-})
-
-console.log(`Running at ${server.url}`)
-
 // Random port with auto-start
 const server = await createAppServer({
   port: 0, // Random available port
@@ -294,6 +287,33 @@ console.log(`Server started on port ${server.port}`)
 // Clean up
 await server.close()
 ```
+
+#### `defineServerOptions(options)`
+
+Helper function for better TypeScript type inference when extracting server options to a variable.
+
+**Parameters:**
+
+- `options`: Server configuration object
+
+**Returns:** The same options object with preserved literal types
+
+**Example:**
+
+```typescript
+import { createAppServer, defineServerOptions } from 'better-mock-server'
+
+// Use this helper for accurate type inference
+const options = defineServerOptions({
+  routes: { '/': () => 'Hello' },
+  port: 3000,
+  autoListen: true
+})
+
+const server = await createAppServer(options) // Type: Promise<AppServer> ✅
+```
+
+**Note:** JavaScript users can ignore this function. It's only needed for TypeScript type inference.
 
 #### `createApp(options)`
 
@@ -541,7 +561,7 @@ type ParsedMiddleware =
   | [string, Middleware, MiddlewareOptions]
 ```
 
-### 插件类型
+### Plugin Types
 
 ```typescript
 import type { H3Plugin } from 'h3'
@@ -698,97 +718,160 @@ process.on('SIGINT', async () => {
 
 ## ✅ Best Practices
 
-1. **Use `autoListen` for Quick Setup**: Enable `autoListen: true` for rapid development and testing:
+### 1. Type Inference for TypeScript Users
 
-   ```typescript
-   const server = await createAppServer({
-     port: 3000,
-     autoListen: true,
-     routes: {
-       /* ... */
-     }
-   })
-   ```
+For optimal TypeScript experience, choose the appropriate approach based on your needs:
 
-2. **Use Port 0 for Testing**: Let the system assign an available port automatically:
+```typescript
+// ✅ Recommended: Inline object literal (best type inference)
+// Type: Promise<AppServer> ✅
 
-   ```typescript
-   const server = await createAppServer({
-     port: 0, // Random port
-     autoListen: true,
-     routes: {
-       /* ... */
-     }
-   })
-   console.log(`Test server running on port ${server.port}`)
-   ```
+// ✅ Alternative 1: Use defineServerOptions helper
+import { defineServerOptions } from 'better-mock-server'
 
-3. **Use `defineRoutes` for Type Safety**: Always wrap your routes with `defineRoutes()` for better IDE support and type checking.
+const server = await createAppServer({
+  routes: {},
+  autoListen: true,
+  port: 3000
+})
 
-4. **Order Matters**: Middlewares and routes are registered in the order they appear. Place global middlewares before route-specific ones.
+const options = defineServerOptions({
+  routes: {},
+  autoListen: true,
+  port: 3000
+})
+const server = await createAppServer(options) // Type: Promise<AppServer> ✅
 
-5. **Async Handlers**: When working with request bodies or async operations, always use async handlers:
+// ✅ Alternative 2: Use as const assertion
+const options = {
+  routes: {},
+  autoListen: true,
+  port: 3000
+} as const
+const server = await createAppServer(options) // Type: Promise<AppServer> ✅
 
-   ```typescript
-   ;async (event) => {
-     const body = await readBody(event)
-     return body
-   }
-   ```
+// ⚠️ Not recommended: External variable without type preservation
+const options = {
+  routes: {},
+  autoListen: true, // Inferred as boolean, not literal true
+  port: 3000
+}
+const server = createAppServer(options) // Type: AppServer (not Promise)
+```
 
-6. **Error Handling**: Use H3's error handling utilities:
+**Why does this happen?**
 
-   ```typescript
-   import { createError } from 'h3'
-   ;(event) => {
-     throw createError({
-       statusCode: 404,
-       message: 'User not found'
-     })
-   }
-   ```
+This is a TypeScript limitation, not a library issue. When you extract options to a variable, TypeScript performs "type widening" and converts `autoListen: true` to `autoListen: boolean`, losing the literal type information needed for accurate return type inference.
 
-7. **Path Parameters**: Access route parameters through `event.context.params`:
+### 2. Use `autoListen` for Quick Setup
 
-   ```typescript
-   const routes = {
-     '/:id': {
-       GET: (event) => {
-         const id = event.context.params.id
-         return { id }
-       }
-     }
-   }
-   ```
+Enable `autoListen: true` for rapid development and testing:
 
-8. **Nested Routes**: Use the `children` property for better organization:
+```typescript
+const server = await createAppServer({
+  port: 3000,
+  autoListen: true,
+  routes: {
+    /* ... */
+  }
+})
+```
 
-   ```typescript
-   const routes = {
-     '/api': {
-       children: {
-         '/users': {
-           /* ... */
-         },
-         '/posts': {
-           /* ... */
-         }
-       }
-     }
-   }
-   ```
+### 3. Use Port 0 for Testing
 
-9. **Manual vs Auto Start**: Choose the appropriate pattern for your use case:
+Let the system assign an available port automatically:
 
-   ```typescript
-   // Manual start - more control
-   const server = createAppServer({ routes })
-   // ... do setup ...
-   await server.listen()
+```typescript
+const server = await createAppServer({
+  port: 0, // Random port
+  autoListen: true,
+  routes: {
+    /* ... */
+  }
+})
+console.log(`Test server running on port ${server.port}`)
+```
 
-   // Auto start - simpler
-   const server = await createAppServer({ routes, autoListen: true })
-   ```
+### 4. Use `defineRoutes` for Type Safety
+
+Always wrap your routes with `defineRoutes()` for better IDE support and type checking.
+
+### 5. Order Matters
+
+Middlewares and routes are registered in the order they appear. Place global middlewares before route-specific ones.
+
+### 6. Async Handlers
+
+When working with request bodies or async operations, always use async handlers:
+
+```typescript
+;async (event) => {
+  const body = await readBody(event)
+  return body
+}
+```
+
+### 7. Error Handling
+
+Use H3's error handling utilities:
+
+```typescript
+import { createError } from 'h3'
+;(event) => {
+  throw createError({
+    statusCode: 404,
+    message: 'User not found'
+  })
+}
+```
+
+### 8. Path Parameters
+
+Access route parameters through `event.context.params`:
+
+```typescript
+const routes = {
+  '/:id': {
+    GET: (event) => {
+      const id = event.context.params.id
+      return { id }
+    }
+  }
+}
+```
+
+### 9. Nested Routes
+
+Use the `children` property for better organization:
+
+```typescript
+const routes = {
+  '/api': {
+    children: {
+      '/users': {
+        /* ... */
+      },
+      '/posts': {
+        /* ... */
+      }
+    }
+  }
+}
+```
+
+### 10. Manual vs Auto Start
+
+Choose the appropriate pattern for your use case:
+
+```typescript
+// Manual start - more control
+const server = createAppServer({ routes })
+// ... do setup ...
+await server.listen()
+
+// Auto start - simpler
+const server = await createAppServer({ routes, autoListen: true })
+```
 
 ## ⚠️ Constraints & Limitations
 
@@ -797,6 +880,7 @@ process.on('SIGINT', async () => {
 - Middleware execution order follows the registration order
 - Port 0 will assign a random available port
 - When using `autoListen: true`, `createAppServer` returns a Promise that must be awaited
+- TypeScript type inference for `autoListen` works best with inline objects or using `defineServerOptions()` / `as const`
 
 ## 📄 License
 
