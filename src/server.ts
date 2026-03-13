@@ -35,18 +35,10 @@ function createApp(options: AppOptions): App {
 
 /**
  * Creates an HTTP server instance with the configured application.
- * When autoListen is false, returns the server instance immediately.
- * When autoListen is true, returns a promise that resolves when the server is ready.
  */
-function createAppServer(
-  options: AppServerOptions & { autoListen: true }
-): Promise<AppServer>
-function createAppServer(
-  options: AppServerOptions & { autoListen?: false }
-): AppServer
-function createAppServer(
-  options: AppServerOptions
-): AppServer | Promise<AppServer>
+function createAppServer<T extends AppServerOptions>(
+  options: T
+): T extends { autoListen: true } ? Promise<AppServer> : AppServer
 function createAppServer(
   options: AppServerOptions
 ): AppServer | Promise<AppServer> {
@@ -57,7 +49,7 @@ function createAppServer(
     port = 0,
     autoListen = false,
     protocol = 'http',
-    hostname = 'localhost',
+    hostname = '127.0.0.1',
     ...restOptions
   } = options
 
@@ -117,4 +109,13 @@ function createAppServer(
   return server
 }
 
-export { createApp, createAppServer }
+/**
+ * Helper function to define server options with proper type inference.
+ * Preserves literal types for autoListen, enabling accurate return type inference.
+ *
+ */
+function defineServerOptions<T extends AppServerOptions>(options: T): T {
+  return options
+}
+
+export { createApp, createAppServer, defineServerOptions }

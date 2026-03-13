@@ -54,7 +54,10 @@ export const buildServerUrl = (
   // Normalize protocol: add ':' if not present
   const normalizedProtocol = protocol.endsWith(':') ? protocol : `${protocol}:`
 
-  const url = new URL(`${normalizedProtocol}//${hostname}`)
+  // Normalize hostname: map 127.0.0.1 to localhost for consistency
+  const normalizedHostname = hostname === '127.0.0.1' ? 'localhost' : hostname
+
+  const url = new URL(`${normalizedProtocol}//${normalizedHostname}`)
   if (port != null) url.port = String(port)
   return url.toString()
 }

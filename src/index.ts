@@ -11,5 +11,5 @@ export {
 } from './middlewares'
 export { definePlugin, registerPlugins } from './plugins'
 export { defineRoutes, parseRoutes, registerRoutes } from './routes'
-export { createApp, createAppServer } from './server'
+export { createApp, createAppServer, defineServerOptions } from './server'
 export { buildServerUrl, joinPaths } from './util'

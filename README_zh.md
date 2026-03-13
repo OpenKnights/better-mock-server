@@ -252,6 +252,10 @@ const server = await createAppServer({
 - `listen(port?)`: 启动服务器的异步函数
 - `close()`: 关闭服务器的异步函数
 
+**TypeScript 类型推导:**
+
+返回类型会根据 `autoListen` 属性自动推导。为获得最佳效果,请使用内联对象或 `defineServerOptions()` 辅助函数。详细示例请参见[最佳实践](#-最佳实践)。
+
 **示例:**
 
 ```typescript
@@ -269,17 +273,6 @@ console.log(`运行在 ${server.url}`)
 // 或在监听时覆盖端口
 await server.listen(4000)
 
-// 自动启动
-const server = await createAppServer({
-  port: 3000,
-  autoListen: true,
-  routes: {
-    '/api/hello': () => 'Hello'
-  }
-})
-
-console.log(`运行在 ${server.url}`)
-
 // 随机端口自动启动
 const server = await createAppServer({
   port: 0, // 随机可用端口
@@ -294,6 +287,33 @@ console.log(`服务器在端口 ${server.port} 上启动`)
 // 清理
 await server.close()
 ```
+
+#### `defineServerOptions(options)`
+
+用于在将服务器选项提取到变量时获得更好的 TypeScript 类型推导的辅助函数。
+
+**参数:**
+
+- `options`: 服务器配置对象
+
+**返回值:** 保留了字面量类型的相同选项对象
+
+**示例:**
+
+```typescript
+import { createAppServer, defineServerOptions } from 'better-mock-server'
+
+// 使用此辅助函数以获得准确的类型推导
+const options = defineServerOptions({
+  routes: { '/': () => 'Hello' },
+  port: 3000,
+  autoListen: true
+})
+
+const server = await createAppServer(options) // 类型: Promise<AppServer> ✅
+```
+
+**注意:** JavaScript 用户可以忽略此函数,它仅用于 TypeScript 类型推导。
 
 #### `createApp(options)`
 
@@ -698,97 +718,160 @@ process.on('SIGINT', async () => {
 
 ## ✅ 最佳实践
 
-1. **使用 `autoListen` 快速设置**: 启用 `autoListen: true` 用于快速开发和测试:
+### 1. TypeScript 用户的类型推导
 
-   ```typescript
-   const server = await createAppServer({
-     port: 3000,
-     autoListen: true,
-     routes: {
-       /* ... */
-     }
-   })
-   ```
+为了获得最佳的 TypeScript 体验,根据你的需求选择合适的方法:
 
-2. **使用端口 0 进行测试**: 让系统自动分配可用端口:
+```typescript
+// ✅ 推荐: 内联对象字面量(最佳类型推导)
+// 类型: Promise<AppServer> ✅
 
-   ```typescript
-   const server = await createAppServer({
-     port: 0, // 随机端口
-     autoListen: true,
-     routes: {
-       /* ... */
-     }
-   })
-   console.log(`测试服务器运行在端口 ${server.port}`)
-   ```
+// ✅ 备选方案 1: 使用 defineServerOptions 辅助函数
+import { defineServerOptions } from 'better-mock-server'
 
-3. **使用 `defineRoutes` 获得类型安全**: 始终使用 `defineRoutes()` 包装你的路由以获得更好的 IDE 支持和类型检查。
+const server = await createAppServer({
+  routes: {},
+  autoListen: true,
+  port: 3000
+})
 
-4. **顺序很重要**: 中间件和路由按照它们出现的顺序注册。将全局中间件放在路由特定中间件之前。
+const options = defineServerOptions({
+  routes: {},
+  autoListen: true,
+  port: 3000
+})
+const server = await createAppServer(options) // 类型: Promise<AppServer> ✅
 
-5. **异步处理程序**: 处理请求体或异步操作时,始终使用异步处理程序:
+// ✅ 备选方案 2: 使用 as const 断言
+const options = {
+  routes: {},
+  autoListen: true,
+  port: 3000
+} as const
+const server = await createAppServer(options) // 类型: Promise<AppServer> ✅
 
-   ```typescript
-   ;async (event) => {
-     const body = await readBody(event)
-     return body
-   }
-   ```
+// ⚠️ 不推荐: 外部变量未保留类型
+const options = {
+  routes: {},
+  autoListen: true, // 推导为 boolean,而非字面量 true
+  port: 3000
+}
+const server = createAppServer(options) // 类型: AppServer (不是 Promise)
+```
 
-6. **错误处理**: 使用 H3 的错误处理工具:
+**为什么会这样?**
 
-   ```typescript
-   import { createError } from 'h3'
-   ;(event) => {
-     throw createError({
-       statusCode: 404,
-       message: '用户未找到'
-     })
-   }
-   ```
+这是 TypeScript 的限制,而不是库的问题。当你将选项提取到变量时,TypeScript 会执行"类型拓宽",将 `autoListen: true` 转换为 `autoListen: boolean`,丢失了准确返回类型推导所需的字面量类型信息。
 
-7. **路径参数**: 通过 `event.context.params` 访问路由参数:
+### 2. 使用 `autoListen` 快速设置
 
-   ```typescript
-   const routes = {
-     '/:id': {
-       GET: (event) => {
-         const id = event.context.params.id
-         return { id }
-       }
-     }
-   }
-   ```
+启用 `autoListen: true` 用于快速开发和测试:
 
-8. **嵌套路由**: 使用 `children` 属性以获得更好的组织:
+```typescript
+const server = await createAppServer({
+  port: 3000,
+  autoListen: true,
+  routes: {
+    /* ... */
+  }
+})
+```
 
-   ```typescript
-   const routes = {
-     '/api': {
-       children: {
-         '/users': {
-           /* ... */
-         },
-         '/posts': {
-           /* ... */
-         }
-       }
-     }
-   }
-   ```
+### 3. 使用端口 0 进行测试
 
-9. **手动 vs 自动启动**: 根据你的使用场景选择合适的模式:
+让系统自动分配可用端口:
 
-   ```typescript
-   // 手动启动 - 更多控制
-   const server = createAppServer({ routes })
-   // ... 进行设置 ...
-   await server.listen()
+```typescript
+const server = await createAppServer({
+  port: 0, // 随机端口
+  autoListen: true,
+  routes: {
+    /* ... */
+  }
+})
+console.log(`测试服务器运行在端口 ${server.port}`)
+```
 
-   // 自动启动 - 更简单
-   const server = await createAppServer({ routes, autoListen: true })
-   ```
+### 4. 使用 `defineRoutes` 获得类型安全
+
+始终使用 `defineRoutes()` 包装你的路由以获得更好的 IDE 支持和类型检查。
+
+### 5. 顺序很重要
+
+中间件和路由按照它们出现的顺序注册。将全局中间件放在路由特定中间件之前。
+
+### 6. 异步处理程序
+
+处理请求体或异步操作时,始终使用异步处理程序:
+
+```typescript
+;async (event) => {
+  const body = await readBody(event)
+  return body
+}
+```
+
+### 7. 错误处理
+
+使用 H3 的错误处理工具:
+
+```typescript
+import { createError } from 'h3'
+;(event) => {
+  throw createError({
+    statusCode: 404,
+    message: '用户未找到'
+  })
+}
+```
+
+### 8. 路径参数
+
+通过 `event.context.params` 访问路由参数:
+
+```typescript
+const routes = {
+  '/:id': {
+    GET: (event) => {
+      const id = event.context.params.id
+      return { id }
+    }
+  }
+}
+```
+
+### 9. 嵌套路由
+
+使用 `children` 属性以获得更好的组织:
+
+```typescript
+const routes = {
+  '/api': {
+    children: {
+      '/users': {
+        /* ... */
+      },
+      '/posts': {
+        /* ... */
+      }
+    }
+  }
+}
+```
+
+### 10. 手动 vs 自动启动
+
+根据你的使用场景选择合适的模式:
+
+```typescript
+// 手动启动 - 更多控制
+const server = createAppServer({ routes })
+// ... 进行设置 ...
+await server.listen()
+
+// 自动启动 - 更简单
+const server = await createAppServer({ routes, autoListen: true })
+```
 
 ## ⚠️ 约束和限制
 
@@ -797,10 +880,11 @@ process.on('SIGINT', async () => {
 - 中间件执行顺序遵循注册顺序
 - 端口 0 将分配一个随机可用端口
 - 使用 `autoListen: true` 时,`createAppServer` 返回一个必须等待的 Promise
+- TypeScript 的 `autoListen` 类型推导在使用内联对象或 `defineServerOptions()` / `as const` 时效果最好
 
 ## 📄 许可证
 
-MIT License © 2025 [king3](https://github.com/OpenKnights)
+[MIT](./LICENSE) 许可证 © 2025-至今 [king3](https://github.com/coderking3)
 
 ## 🤝 贡献
 
