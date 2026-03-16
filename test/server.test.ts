@@ -45,7 +45,7 @@ describe('server', () => {
   })
 
   describe('createAppServer', () => {
-    it('should create server instance without autoListen', () => {
+    it('should create server instance', () => {
       const routes = { '/api': vi.fn() }
       const server = createAppServer({ routes })
 
@@ -79,16 +79,61 @@ describe('server', () => {
       expect(server.url).toContain('8080')
     })
 
-    it('should autoListen when enabled', async () => {
-      const server = await createAppServer({
-        routes: { '/api': vi.fn() },
-        autoListen: true,
-        port: 5050
-      })
+    it('should close previous server when listen is called again', async () => {
+      const routes = { '/api': vi.fn() }
+      const server = createAppServer({ routes, port: 8080 })
+
+      await server.listen()
+      const previousRaw = server.raw!
+      const previousClose = previousRaw.close
+
+      await server.listen(9090)
+
+      expect(previousClose).toHaveBeenCalled()
+      expect(server.port).toBe(9090)
+      expect(server.url).toContain('9090')
+    })
+
+    it('should restart server on same port', async () => {
+      const server = createAppServer({ routes: {}, port: 8080 })
+
+      await server.listen()
+      const previousRaw = server.raw!
+
+      await server.restart()
+
+      expect(previousRaw.close).toHaveBeenCalled()
+      expect(server.raw).toBeDefined()
+      expect(server.port).toBe(8080)
+    })
+
+    it('should restart server on a different port', async () => {
+      const server = createAppServer({ routes: {}, port: 8080 })
+
+      await server.listen()
+
+      await server.restart(9090)
+
+      expect(server.port).toBe(9090)
+      expect(server.url).toContain('9090')
+    })
+
+    it('should restart server retaining the last listen port', async () => {
+      const server = createAppServer({ routes: {}, port: 8080 })
+
+      await server.listen(9090)
+      await server.restart()
+
+      expect(server.port).toBe(9090)
+    })
+
+    it('should restart server even when not listening', async () => {
+      const server = createAppServer({ routes: {}, port: 8080 })
+
+      await server.restart()
 
       expect(server.raw).toBeDefined()
-      expect(server.port).toBe(5050)
-      expect(server.url).toContain('5050')
+      expect(server.port).toBe(8080)
     })
 
     it('should close server correctly', async () => {

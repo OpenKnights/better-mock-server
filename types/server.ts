@@ -39,13 +39,6 @@ type srvxServerOptions = Omit<ServerOptions, 'fetch' | 'middleware' | 'plugins'>
  */
 interface AppServerOptions extends AppOptions, srvxServerOptions {
   routes: Routes
-
-  /**
-   * Whether to automatically start listening for connections when the server is created.
-   * If true, the server will call listen() immediately upon creation.
-   * If false (default), you need to manually call server.listen() to start the server.
-   */
-  autoListen?: boolean
 }
 
 /**
@@ -93,6 +86,14 @@ interface AppServer {
    * Resets port, url, and raw to undefined after closing.
    */
   close: () => Promise<void>
+
+  /**
+   * Restarts the server by closing and re-listening.
+   * Optionally accepts a new port to listen on.
+   *
+   * @param {number} [listenPort] - Optional port to override the default
+   */
+  restart: (listenPort?: number) => Promise<void>
 }
 
 export {

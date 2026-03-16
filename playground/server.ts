@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { redirect } from 'h3'
 
-import { createAppServer, defineRoutes, defineServerOptions } from '../src'
+import { createAppServer, defineRoutes } from '../src'
 
 const routes = defineRoutes({
   '/': {
@@ -32,13 +32,10 @@ const routes = defineRoutes({
   }
 })
 
-const serverOptions = defineServerOptions({
+const server = createAppServer({
   routes,
-  // autoListen: true,
   port: 3060
 })
-
-const server = createAppServer(serverOptions)
 await server.listen()
 
 console.log(`🚀 ~ server:`, server)
