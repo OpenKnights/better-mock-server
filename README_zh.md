@@ -18,7 +18,6 @@
 - 🔌 **中间件支持**: 轻松注册中间件,支持路由特定选项
 - 🧩 **插件系统**: 通过 H3 的插件架构进行扩展
 - 📦 **零配置**: 开箱即用,具有合理的默认值
-- ⚡ **自动监听**: 可选的自动服务器启动,基于 Promise 的 API
 
 ## 📦 安装
 
@@ -49,37 +48,18 @@ console.log(`服务器运行在 ${server.url}`)
 await server.close()
 ```
 
-### 自动启动服务器
-
-```typescript
-import { createAppServer } from 'better-mock-server'
-
-// 服务器自动启动并返回一个 promise
-const server = await createAppServer({
-  port: 3000,
-  autoListen: true,
-  routes: {
-    '/api/hello': (event) => {
-      return { message: 'Hello World!' }
-    }
-  }
-})
-
-console.log(`服务器运行在 ${server.url}`)
-```
-
 ### 随机端口
 
 ```typescript
 // 使用端口 0 进行自动端口分配
-const server = await createAppServer({
+const server = createAppServer({
   port: 0,
-  autoListen: true,
   routes: {
     '/api/ping': () => 'pong'
   }
 })
 
+await server.listen()
 console.log(`服务器运行在 ${server.url}`) // 例如: http://localhost:54321/
 console.log(`端口: ${server.port}`) // 例如: 54321
 ```
@@ -211,13 +191,14 @@ const loggerPlugin = definePlugin((h3, _options) => {
   }
 })
 
-const server = await createAppServer({
-  autoListen: true,
+const server = createAppServer({
   routes: {
     /* ... */
   },
   plugins: [loggerPlugin]
 })
+
+await server.listen()
 ```
 
 ## 📚 API 参考
@@ -226,7 +207,7 @@ const server = await createAppServer({
 
 #### `createAppServer(options)`
 
-创建并可选地启动一个配置好的 HTTP 服务器应用程序。
+创建一个配置好的 HTTP 服务器应用程序。
 
 **参数:**
 
@@ -236,12 +217,8 @@ const server = await createAppServer({
 - `options.port` (可选): 端口号(默认: 0 表示随机端口)
 - `options.hostname` (可选): 主机名(默认: 'localhost')
 - `options.protocol` (可选): 协议(默认: 'http')
-- `options.autoListen` (可选): 自动启动服务器(默认: false)
 
-**返回值:**
-
-- 当 `autoListen` 为 `false` 或省略时: `AppServer` 对象
-- 当 `autoListen` 为 `true` 时: `Promise<AppServer>`,在服务器就绪时解析
+**返回值:** `AppServer` 对象
 
 **AppServer 属性:**
 
@@ -249,17 +226,13 @@ const server = await createAppServer({
 - `app`: H3 应用程序实例
 - `port`: 服务器端口号(`listen()` 后可用)
 - `url`: 服务器 URL(`listen()` 后可用)
-- `listen(port?)`: 启动服务器的异步函数
+- `listen(port?)`: 启动服务器的异步函数。重复调用时会自动关闭上一个服务器
 - `close()`: 关闭服务器的异步函数
-
-**TypeScript 类型推导:**
-
-返回类型会根据 `autoListen` 属性自动推导。为获得最佳效果,请使用内联对象或 `defineServerOptions()` 辅助函数。详细示例请参见[最佳实践](#-最佳实践)。
+- `restart(port?)`: 重启服务器的异步函数。不传端口时使用上次 listen 的端口
 
 **示例:**
 
 ```typescript
-// 手动启动
 const server = createAppServer({
   port: 3000,
   routes: {
@@ -273,47 +246,9 @@ console.log(`运行在 ${server.url}`)
 // 或在监听时覆盖端口
 await server.listen(4000)
 
-// 随机端口自动启动
-const server = await createAppServer({
-  port: 0, // 随机可用端口
-  autoListen: true,
-  routes: {
-    '/api/test': () => 'Test'
-  }
-})
-
-console.log(`服务器在端口 ${server.port} 上启动`)
-
 // 清理
 await server.close()
 ```
-
-#### `defineServerOptions(options)`
-
-用于在将服务器选项提取到变量时获得更好的 TypeScript 类型推导的辅助函数。
-
-**参数:**
-
-- `options`: 服务器配置对象
-
-**返回值:** 保留了字面量类型的相同选项对象
-
-**示例:**
-
-```typescript
-import { createAppServer, defineServerOptions } from 'better-mock-server'
-
-// 使用此辅助函数以获得准确的类型推导
-const options = defineServerOptions({
-  routes: { '/': () => 'Hello' },
-  port: 3000,
-  autoListen: true
-})
-
-const server = await createAppServer(options) // 类型: Promise<AppServer> ✅
-```
-
-**注意:** JavaScript 用户可以忽略此函数,它仅用于 TypeScript 类型推导。
 
 #### `createApp(options)`
 
@@ -589,7 +524,6 @@ type srvxServerOptions = Omit<ServerOptions, 'fetch' | 'middleware' | 'plugins'>
 
 interface AppServerOptions extends AppOptions, srvxServerOptions {
   routes: Routes
-  autoListen?: boolean
 }
 
 interface AppServer {
@@ -599,6 +533,7 @@ interface AppServer {
   url: string | undefined
   listen: (listenPort?: number) => Promise<void>
   close: () => Promise<void>
+  restart: (listenPort?: number) => Promise<void>
 }
 ```
 
@@ -624,9 +559,8 @@ const corsPlugin = definePlugin((h3, _options) => {
 })
 
 // 使用完整配置创建服务器
-const server = await createAppServer({
+const server = createAppServer({
   port: 3000,
-  autoListen: true,
 
   plugins: [corsPlugin],
 
@@ -706,6 +640,7 @@ const server = await createAppServer({
   }
 })
 
+await server.listen()
 console.log(`🚀 服务器运行在 ${server.url}`)
 
 // 优雅关闭
@@ -718,89 +653,30 @@ process.on('SIGINT', async () => {
 
 ## ✅ 最佳实践
 
-### 1. TypeScript 用户的类型推导
-
-为了获得最佳的 TypeScript 体验,根据你的需求选择合适的方法:
-
-```typescript
-// ✅ 推荐: 内联对象字面量(最佳类型推导)
-// 类型: Promise<AppServer> ✅
-
-// ✅ 备选方案 1: 使用 defineServerOptions 辅助函数
-import { defineServerOptions } from 'better-mock-server'
-
-const server = await createAppServer({
-  routes: {},
-  autoListen: true,
-  port: 3000
-})
-
-const options = defineServerOptions({
-  routes: {},
-  autoListen: true,
-  port: 3000
-})
-const server = await createAppServer(options) // 类型: Promise<AppServer> ✅
-
-// ✅ 备选方案 2: 使用 as const 断言
-const options = {
-  routes: {},
-  autoListen: true,
-  port: 3000
-} as const
-const server = await createAppServer(options) // 类型: Promise<AppServer> ✅
-
-// ⚠️ 不推荐: 外部变量未保留类型
-const options = {
-  routes: {},
-  autoListen: true, // 推导为 boolean,而非字面量 true
-  port: 3000
-}
-const server = createAppServer(options) // 类型: AppServer (不是 Promise)
-```
-
-**为什么会这样?**
-
-这是 TypeScript 的限制,而不是库的问题。当你将选项提取到变量时,TypeScript 会执行"类型拓宽",将 `autoListen: true` 转换为 `autoListen: boolean`,丢失了准确返回类型推导所需的字面量类型信息。
-
-### 2. 使用 `autoListen` 快速设置
-
-启用 `autoListen: true` 用于快速开发和测试:
-
-```typescript
-const server = await createAppServer({
-  port: 3000,
-  autoListen: true,
-  routes: {
-    /* ... */
-  }
-})
-```
-
-### 3. 使用端口 0 进行测试
+### 1. 使用端口 0 进行测试
 
 让系统自动分配可用端口:
 
 ```typescript
-const server = await createAppServer({
+const server = createAppServer({
   port: 0, // 随机端口
-  autoListen: true,
   routes: {
     /* ... */
   }
 })
+await server.listen()
 console.log(`测试服务器运行在端口 ${server.port}`)
 ```
 
-### 4. 使用 `defineRoutes` 获得类型安全
+### 2. 使用 `defineRoutes` 获得类型安全
 
 始终使用 `defineRoutes()` 包装你的路由以获得更好的 IDE 支持和类型检查。
 
-### 5. 顺序很重要
+### 3. 顺序很重要
 
 中间件和路由按照它们出现的顺序注册。将全局中间件放在路由特定中间件之前。
 
-### 6. 异步处理程序
+### 4. 异步处理程序
 
 处理请求体或异步操作时,始终使用异步处理程序:
 
@@ -811,7 +687,7 @@ console.log(`测试服务器运行在端口 ${server.port}`)
 }
 ```
 
-### 7. 错误处理
+### 5. 错误处理
 
 使用 H3 的错误处理工具:
 
@@ -825,7 +701,7 @@ import { createError } from 'h3'
 }
 ```
 
-### 8. 路径参数
+### 6. 路径参数
 
 通过 `event.context.params` 访问路由参数:
 
@@ -840,7 +716,7 @@ const routes = {
 }
 ```
 
-### 9. 嵌套路由
+### 7. 嵌套路由
 
 使用 `children` 属性以获得更好的组织:
 
@@ -859,28 +735,12 @@ const routes = {
 }
 ```
 
-### 10. 手动 vs 自动启动
-
-根据你的使用场景选择合适的模式:
-
-```typescript
-// 手动启动 - 更多控制
-const server = createAppServer({ routes })
-// ... 进行设置 ...
-await server.listen()
-
-// 自动启动 - 更简单
-const server = await createAppServer({ routes, autoListen: true })
-```
-
 ## ⚠️ 约束和限制
 
 - 该库基于 H3 构建,因此适用所有 H3 的限制
 - 路由定义必须在服务器启动时已知(不支持动态路由注册)
 - 中间件执行顺序遵循注册顺序
 - 端口 0 将分配一个随机可用端口
-- 使用 `autoListen: true` 时,`createAppServer` 返回一个必须等待的 Promise
-- TypeScript 的 `autoListen` 类型推导在使用内联对象或 `defineServerOptions()` / `as const` 时效果最好
 
 ## 📄 许可证
 
