@@ -1,5 +1,6 @@
 /* export types */
 export type * from '#types/middlewares'
+export type * from '#types/plugins'
 export type * from '#types/routes'
 export type * from '#types/server'
 
