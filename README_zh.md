@@ -9,6 +9,9 @@
 
 [English](./README.md) | [中文](./README_zh.md)
 
+> [!WARNING]
+> 本项目已弃用且不再维护。请迁移至新版 [k3-server](https://github.com/OpenKnights/k3-server)。
+
 ## ✨ 特性
 
 - 🎯 **类型安全**: 完整的 TypeScript 支持和全面的类型定义
