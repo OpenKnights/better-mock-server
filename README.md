@@ -9,6 +9,9 @@
 
 [English](./README.md) | [中文](./README_zh.md)
 
+> [!WARNING]
+> This project is deprecated and no longer maintained. Please use [k3-server](https://github.com/OpenKnights/k3-server) instead.
+
 ## ✨ Features
 
 - 🎯 **Type-Safe**: Full TypeScript support with comprehensive type definitions
