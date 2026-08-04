@@ -10,7 +10,7 @@
 [English](./README.md) | [中文](./README_zh.md)
 
 > [!WARNING]
-> This project is deprecated and no longer maintained. Please use [k3-server](https://github.com/OpenKnights/k3-server) instead.
+> This project is deprecated and no longer maintained. Please use [katro](https://github.com/OpenKnights/katro) instead.
 
 ## ✨ Features
 
