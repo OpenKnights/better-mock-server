@@ -10,7 +10,7 @@
 [English](./README.md) | [中文](./README_zh.md)
 
 > [!WARNING]
-> 本项目已弃用且不再维护。请迁移至新版 [k3-server](https://github.com/OpenKnights/k3-server)。
+> 本项目已弃用且不再维护。请迁移至新版 [katro](https://github.com/OpenKnights/katro)。
 
 ## ✨ 特性
 
