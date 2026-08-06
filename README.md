@@ -1,6 +1,8 @@
 # better-mock-server
 
 > A TypeScript-first mock server library built on top of [unjs/h3](https://github.com/unjs/h3), providing an elegant and type-safe way to create HTTP mock servers for development and testing.
+> [!WARNING]
+> This project is deprecated and no longer maintained. Please use [kaivo](https://github.com/OpenKnights/kaivo) instead.
 
 [![npm version](https://img.shields.io/npm/v/better-mock-server.svg)](https://www.npmjs.com/package/better-mock-server)
 [![npm downloads](https://img.shields.io/npm/dm/better-mock-server.svg)](https://www.npmjs.com/package/better-mock-server)
@@ -8,9 +10,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [English](./README.md) | [中文](./README_zh.md)
-
-> [!WARNING]
-> This project is deprecated and no longer maintained. Please use [katro](https://github.com/OpenKnights/katro) instead.
 
 ## ✨ Features
 
